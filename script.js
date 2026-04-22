@@ -1,4 +1,5 @@
 const TOTAL_ROUNDS = 12;
+const MAX_LEVEL = 4;
 let currentLevel = 1;
 let levelCorrectAnswers = 0;
 let levelHasMistake = false;
@@ -194,6 +195,35 @@ function spawnMeteor() {
   });
 }
 
+function spawnLevelCelebration(isFinal = false) {
+  if (!meteorLayerEl) return;
+  const amount = isFinal ? 46 : 28;
+  for (let i = 0; i < amount; i += 1) {
+    const star = document.createElement("span");
+    star.className = "level-star";
+    if (isFinal) {
+      star.classList.add("level-star-final");
+    }
+    star.style.left = `${8 + Math.random() * 84}%`;
+    star.style.top = `${-8 - Math.random() * 18}px`;
+    if (isFinal) {
+      star.style.setProperty("--star-size", `${10 + Math.random() * 12}px`);
+      star.style.setProperty("--star-duration", `${1400 + Math.random() * 700}ms`);
+      star.style.setProperty("--star-drift", `${-42 + Math.random() * 84}px`);
+      star.style.animationDelay = `${Math.random() * 280}ms`;
+    } else {
+      star.style.setProperty("--star-size", `${7 + Math.random() * 8}px`);
+      star.style.setProperty("--star-duration", `${1000 + Math.random() * 500}ms`);
+      star.style.setProperty("--star-drift", `${-28 + Math.random() * 56}px`);
+      star.style.animationDelay = `${Math.random() * 220}ms`;
+    }
+    meteorLayerEl.appendChild(star);
+    star.addEventListener("animationend", () => {
+      star.remove();
+    });
+  }
+}
+
 function renderBoosts() {
   const shownLevel = Math.min(Math.max(currentLevel, 1), 4);
   boostListEl.innerHTML = "";
@@ -263,7 +293,7 @@ function updatePositions() {
 
 function setMessage(text, type = "") {
   messageEl.textContent = text;
-  messageEl.classList.remove("message-good", "message-bad");
+  messageEl.classList.remove("message-good", "message-bad", "message-level-win", "message-final-win");
   if (type) {
     messageEl.classList.add(type);
   }
@@ -326,14 +356,27 @@ function finishGame() {
   questionCardEl.classList.add("hidden");
   resultCardEl.classList.remove("hidden");
   resultCardEl.classList.remove("result-win");
+  resultCardEl.classList.remove("result-final-win");
 
   const levelPassed = levelCorrectAnswers === TOTAL_ROUNDS;
+  const isFinalVictory = levelPassed && currentLevel >= MAX_LEVEL;
 
-  if (levelPassed) {
-    setMessage("Ты готов к следующему уровню", "message-good");
+  if (isFinalVictory) {
+    setMessage("Победа! Ты прошёл все уровни! 🚀⭐", "message-good");
+    messageEl.classList.add("message-final-win");
+    resultCardEl.classList.add("result-win");
+    resultCardEl.classList.add("result-final-win");
+    playWinMelody();
+    spawnLevelCelebration(true);
+    nextLevelBtn.classList.add("hidden");
+    nextLevelBtn.dataset.mode = "";
+  } else if (levelPassed) {
+    setMessage("Уровень пройден! 🚀", "message-good");
+    messageEl.classList.add("message-level-win");
     resultCardEl.classList.add("result-win");
     playWinMelody();
-    nextLevelBtn.textContent = "Перейти дальше";
+    spawnLevelCelebration();
+    nextLevelBtn.textContent = "На следующий уровень 🚀";
     nextLevelBtn.dataset.mode = "next";
   } else {
     setMessage("Попробуй ещё раз", "message-bad");
@@ -346,13 +389,22 @@ function finishGame() {
     <p>⭐ Правильных ответов: <strong>${stars}</strong></p>
     <p>💣 Ошибок: <strong>${bombs}</strong></p>
     <p>✅ Верных в уровне: <strong>${levelCorrectAnswers}</strong> / ${TOTAL_ROUNDS}</p>
+    ${isFinalVictory ? "<p class='final-mission-text'><strong>Миссия завершена! Ты выучил таблицу умножения!</strong></p>" : ""}
   `;
   renderBoosts();
 
   pauseBtn.classList.add("hidden");
   pauseBtn.textContent = "Пауза";
   stopBtn.classList.add("hidden");
-  nextLevelBtn.classList.remove("hidden");
+  if (!isFinalVictory) {
+    nextLevelBtn.classList.remove("level-cta-show");
+    void nextLevelBtn.offsetWidth;
+    nextLevelBtn.classList.add("level-cta-show");
+    nextLevelBtn.classList.remove("hidden");
+  } else {
+    nextLevelBtn.classList.add("hidden");
+    nextLevelBtn.dataset.mode = "";
+  }
   restartBtn.classList.remove("hidden");
   startBtn.classList.add("hidden");
 }
@@ -368,6 +420,8 @@ function startNextLevel() {
   const mode = nextLevelBtn.dataset.mode || "retry";
   if (mode === "next") {
     currentLevel += 1;
+    // Сразу обновляем подсветку индикатора уровня после перехода.
+    renderBoosts();
   }
 
   gameStarted = true;
@@ -390,6 +444,7 @@ function startNextLevel() {
 
   startBtn.classList.add("hidden");
   nextLevelBtn.classList.add("hidden");
+  nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
   pauseBtn.classList.remove("hidden");
   pauseBtn.textContent = "Пауза";
@@ -400,8 +455,14 @@ function startNextLevel() {
   questionCardEl.classList.remove("hidden");
   resultCardEl.classList.add("hidden");
   resultCardEl.classList.remove("result-win");
+  resultCardEl.classList.remove("result-final-win");
   resultCardEl.innerHTML = "";
 
+  // Для режима retry оставляем подсветку текущего уровня,
+  // для режима next уже применена новая подсветка выше.
+  if (mode !== "next") {
+    renderBoosts();
+  }
   updatePositions();
   loadNextRound();
 }
@@ -580,6 +641,7 @@ function resetGameAndStart() {
   timerEl.textContent = getLevelTimeLimit(currentLevel);
   startBtn.classList.add("hidden");
   nextLevelBtn.classList.add("hidden");
+  nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
   pauseBtn.classList.remove("hidden");
   pauseBtn.textContent = "Пауза";
@@ -635,6 +697,7 @@ function prepareStartScreen(statusText = "Готова к полету") {
   setMessage(statusText);
   startBtn.classList.remove("hidden");
   nextLevelBtn.classList.add("hidden");
+  nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
   pauseBtn.classList.add("hidden");
   pauseBtn.textContent = "Пауза";
