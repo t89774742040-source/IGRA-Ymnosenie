@@ -12,6 +12,7 @@ const bombsEl = document.getElementById("bombs");
 const messageEl = document.getElementById("message");
 const fireBadgeEl = document.getElementById("fireBadge");
 const meteorLayerEl = document.getElementById("meteorLayer");
+const gameEl = document.querySelector(".game");
 const questionEl = document.getElementById("question");
 const answersEl = document.getElementById("answers");
 const questionCardEl = document.querySelector(".question-card");
@@ -407,6 +408,9 @@ function finishGame() {
   }
   restartBtn.classList.remove("hidden");
   startBtn.classList.add("hidden");
+  if (gameEl) {
+    gameEl.classList.add("mobile-finished");
+  }
 }
 
 function stopGame() {
@@ -426,6 +430,9 @@ function startNextLevel() {
 
   gameStarted = true;
   isPaused = false;
+  if (gameEl) {
+    gameEl.classList.remove("mobile-finished");
+  }
 
   // Сбрасываем только параметры уровня/раундов.
   round = 0;
@@ -625,6 +632,9 @@ function handleTimeout() {
 function resetGameAndStart() {
   gameStarted = true;
   isPaused = false;
+  if (gameEl) {
+    gameEl.classList.remove("mobile-finished");
+  }
   round = 0;
   streak = 0;
   stars = 0;
@@ -666,6 +676,9 @@ function prepareStartScreen(statusText = "Готова к полету") {
   clearInterval(timerId);
   gameStarted = false;
   isPaused = false;
+  if (gameEl) {
+    gameEl.classList.remove("mobile-finished");
+  }
   round = 0;
   streak = 0;
   stars = 0;
