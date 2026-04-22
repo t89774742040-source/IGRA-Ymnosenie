@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>КосмоУмножайка: Спасение планет</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="meteorLayer" class="meteor-layer" aria-hidden="true"></div>
+  <div class="game">
+    <div class="hero-block">
+      <h1>КосмоУмножайка: Спасение планет</h1>
+      <p class="subtitle-hint">Отвечай правильно и обгони соперника 🚀 · 6 секунд на ответ ⏱</p>
+    </div>
+
+    <div class="game-layout">
+      <aside class="left-col">
+        <div class="status-card">
+          <p class="progress-line">
+            <span id="round" class="progress-current">1</span>
+            <span class="progress-sep"> / </span>
+            <span class="progress-total">12</span>
+          </p>
+          <p><strong>Таймер:</strong> <span id="timer">6</span> сек</p>
+          <p><strong>Серия:</strong> <span id="streak">0</span></p>
+        </div>
+      </aside>
+
+      <main class="center-col">
+        <div class="track">
+          <div class="lane">
+            <span class="label">🚀 Ты</span>
+            <div class="progress">
+              <div id="rocket" class="runner">🚀</div>
+            </div>
+          </div>
+          <div class="lane">
+            <span class="label">👽 Соперник</span>
+            <div class="progress">
+              <div id="alien" class="runner">👽</div>
+            </div>
+          </div>
+          <div class="goal">🪐 Цель</div>
+        </div>
+
+        <div class="question-card">
+          <h2 id="question">3 × 4 = ?</h2>
+          <div id="answers" class="answers">
+            <button class="answer-btn">12</button>
+            <button class="answer-btn">15</button>
+            <button class="answer-btn">10</button>
+          </div>
+        </div>
+
+        <div id="resultCard" class="result-card hidden"></div>
+
+        <div class="action-zone">
+          <button id="startBtn" class="restart">Начать игру</button>
+          <button id="nextLevelBtn" class="restart hidden">Перейти на следующий уровень</button>
+          <button id="pauseBtn" class="restart pause-btn hidden">Пауза</button>
+          <button id="stopBtn" class="restart stop-btn hidden">Стоп</button>
+          <button id="restartBtn" class="restart hidden">Играть снова</button>
+        </div>
+      </main>
+
+      <aside class="right-col">
+        <div class="status-card">
+          <p><strong>Звезды:</strong> <span id="stars">0</span> ⭐</p>
+          <p><strong>Ошибки:</strong> <span id="bombs">0</span> 💣</p>
+        </div>
+
+        <div class="status-card message-card">
+          <p id="message">Решай пример и опереди 👽!</p>
+          <p id="fireBadge" class="fire-badge hidden">🔥 Огонь! Ответ за 1 секунду</p>
+        </div>
+
+        <div id="boostCard" class="boost-card">
+          <h3>Ускорители реакции</h3>
+          <p class="boost-hint">Текущий уровень и время на ответ.</p>
+          <div id="boostList" class="boost-list"></div>
+        </div>
+      </aside>
+    </div>
+
+    <details id="rulesCard" class="rules-details">
+      <summary>Как играть</summary>
+      <div class="rules-card">
+        <p><strong>Как играть:</strong></p>
+        <p>1) Решай примеры правильно.</p>
+        <p>2) На каждый ответ есть время.</p>
+        <p>3) Уровень состоит из 12 вопросов.</p>
+        <p>4) Чтобы перейти дальше — нужно ответить правильно на все вопросы.</p>
+        <p>5) На каждом новом уровне времени становится меньше.</p>
+      </div>
+    </details>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
