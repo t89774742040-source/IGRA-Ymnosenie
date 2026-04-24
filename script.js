@@ -56,6 +56,12 @@ let activeOscillators = [];
 let activeGains = [];
 let meteorTimerId = null;
 
+function updateMobileGameState() {
+  if (!gameEl) return;
+  gameEl.classList.toggle("mobile-playing", gameStarted);
+  gameEl.classList.toggle("start-state", !gameStarted && !gameEl.classList.contains("mobile-finished"));
+}
+
 function getLevelTimeLimit(level) {
   if (level <= 1) return 10;
   if (level === 2) return 8;
@@ -353,6 +359,7 @@ function finishGame() {
   setButtonsDisabled(true);
   gameStarted = false;
   isPaused = false;
+  updateMobileGameState();
   fireBadgeEl.classList.add("hidden");
   questionCardEl.classList.add("hidden");
   resultCardEl.classList.remove("hidden");
@@ -416,6 +423,8 @@ function finishGame() {
 function stopGame() {
   clearInterval(timerId);
   isPaused = false;
+  gameStarted = false;
+  updateMobileGameState();
   stopAllSounds();
   prepareStartScreen("Игра остановлена. Нажми «Начать игру»");
 }
@@ -430,6 +439,7 @@ function startNextLevel() {
 
   gameStarted = true;
   isPaused = false;
+  updateMobileGameState();
   if (gameEl) {
     gameEl.classList.remove("mobile-finished");
   }
@@ -632,6 +642,7 @@ function handleTimeout() {
 function resetGameAndStart() {
   gameStarted = true;
   isPaused = false;
+  updateMobileGameState();
   if (gameEl) {
     gameEl.classList.remove("mobile-finished");
   }
@@ -676,6 +687,7 @@ function prepareStartScreen(statusText = "Готова к полету") {
   clearInterval(timerId);
   gameStarted = false;
   isPaused = false;
+  updateMobileGameState();
   if (gameEl) {
     gameEl.classList.remove("mobile-finished");
   }
@@ -700,13 +712,25 @@ function prepareStartScreen(statusText = "Готова к полету") {
   resultCardEl.classList.add("hidden");
   resultCardEl.classList.remove("result-win");
   resultCardEl.innerHTML = "";
-  questionEl.textContent = "Нажми «Начать игру»";
-  answersEl.innerHTML = `
-    <button class="answer-btn" disabled>?</button>
-    <button class="answer-btn" disabled>?</button>
-    <button class="answer-btn" disabled>?</button>
+  questionEl.innerHTML = `
+    <span class="start-rule-main">Отвечай правильно и обгони соперника 🚀</span>
+    <span class="start-rule-sub">12 заданий без ошибок — чтобы пройти уровень</span>
   `;
-  setButtonsDisabled(true);
+  answersEl.innerHTML = `
+    <div class="start-scene" aria-hidden="true">
+      <div class="start-lane">
+        <span class="start-runner start-runner-rocket">🚀</span>
+        <div class="start-scene-line"></div>
+        <span class="start-goal">🪐</span>
+      </div>
+      <div class="start-lane">
+        <span class="start-runner start-runner-alien">👽</span>
+        <div class="start-scene-line"></div>
+        <span class="start-goal">🪐</span>
+      </div>
+    </div>
+    <p class="start-mission-text">Нажми «Начать игру», чтобы начать миссию</p>
+  `;
   setMessage(statusText);
   startBtn.classList.remove("hidden");
   nextLevelBtn.classList.add("hidden");

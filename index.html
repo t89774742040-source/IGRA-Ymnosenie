@@ -10,7 +10,10 @@
   <div id="meteorLayer" class="meteor-layer" aria-hidden="true"></div>
   <div class="game">
     <div class="hero-block">
-      <h1>КосмоУмножайка: Спасение планет</h1>
+      <h1>
+        <span class="hero-title-main">КосмоУмножайка</span>
+        <span class="hero-title-sub">Спасение планет</span>
+      </h1>
       <p class="subtitle-hint">Отвечай правильно и обгони соперника 🚀 · 6 секунд на ответ ⏱</p>
     </div>
 
@@ -65,13 +68,16 @@
           </div>
         </div>
 
+        <div class="pause-stop-row">
+          <button id="pauseBtn" class="restart pause-btn hidden">Пауза</button>
+          <button id="stopBtn" class="restart stop-btn hidden">Стоп</button>
+        </div>
+
         <div id="resultCard" class="result-card hidden"></div>
 
         <div class="action-zone">
           <button id="startBtn" class="restart">Начать игру</button>
           <button id="nextLevelBtn" class="restart next-level-btn hidden">Перейти на следующий уровень</button>
-          <button id="pauseBtn" class="restart pause-btn hidden">Пауза</button>
-          <button id="stopBtn" class="restart stop-btn hidden">Стоп</button>
           <button id="restartBtn" class="restart hidden">Играть снова</button>
         </div>
       </main>
