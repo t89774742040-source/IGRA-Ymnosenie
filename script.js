@@ -15,6 +15,8 @@ const meteorLayerEl = document.getElementById("meteorLayer");
 const gameEl = document.querySelector(".game");
 const questionEl = document.getElementById("question");
 const answersEl = document.getElementById("answers");
+const questionTimerTextEl = document.getElementById("questionTimerText");
+const questionTimerBarFillEl = document.getElementById("questionTimerBarFill");
 const questionCardEl = document.querySelector(".question-card");
 const resultCardEl = document.getElementById("resultCard");
 const boostCard = document.getElementById("boostCard");
@@ -39,7 +41,7 @@ let round = 0;
 let streak = 0;
 let rocketSteps = 0;
 let alienSteps = 0;
-let timeLeft = getLevelTimeLimit(currentLevel);
+let timeLeft = getTimeForLevel(currentLevel);
 let timerId = null;
 let currentCorrect = null;
 let roundLocked = false;
@@ -62,11 +64,15 @@ function updateMobileGameState() {
   gameEl.classList.toggle("start-state", !gameStarted && !gameEl.classList.contains("mobile-finished"));
 }
 
-function getLevelTimeLimit(level) {
+function getTimeForLevel(level) {
   if (level <= 1) return 10;
   if (level === 2) return 8;
   if (level === 3) return 6;
   return 4;
+}
+
+function getLevelTimeLimit(level) {
+  return getTimeForLevel(level);
 }
 
 function ensureAudioContext() {
@@ -232,17 +238,18 @@ function spawnLevelCelebration(isFinal = false) {
 }
 
 function renderBoosts() {
-  const shownLevel = Math.min(Math.max(currentLevel, 1), 4);
+  if (!boostCard || !boostListEl) return;
+  boostCard.classList.remove("hidden");
   boostListEl.innerHTML = "";
+
+  const shownLevel = Math.min(Math.max(currentLevel, 1), 4);
   SPEED_LEVELS.forEach((level) => {
     const active = level.level === shownLevel;
     const card = document.createElement("div");
     card.className = `boost-item${active ? " active" : " inactive"}`;
-    const stateText = level.shortText;
     card.innerHTML = `
       <span class="boost-icon">${level.icon}</span>
-      <p class="boost-name">${level.name}</p>
-      <p class="boost-meta">${stateText}</p>
+      <span class="boost-line">${level.name} • ${level.shortText}</span>
     `;
     boostListEl.appendChild(card);
   });
@@ -306,16 +313,42 @@ function setMessage(text, type = "") {
   }
 }
 
+function updateQuestionTimerVisual() {
+  const levelTime = getTimeForLevel(currentLevel);
+  const safeTime = Math.max(0, Math.min(timeLeft, levelTime));
+  const percent = levelTime > 0 ? (safeTime / levelTime) * 100 : 0;
+
+  if (questionTimerTextEl) {
+    if (gameStarted) {
+      questionTimerTextEl.textContent = `Осталось: ${safeTime} сек`;
+    } else {
+      questionTimerTextEl.textContent = `На каждый ответ даётся ${getTimeForLevel(currentLevel)} секунд`;
+    }
+  }
+
+  if (questionTimerBarFillEl) {
+    questionTimerBarFillEl.style.width = `${percent}%`;
+    questionTimerBarFillEl.classList.remove("warning", "danger");
+    if (safeTime <= 3) {
+      questionTimerBarFillEl.classList.add("danger");
+    } else if (safeTime <= 5) {
+      questionTimerBarFillEl.classList.add("warning");
+    }
+  }
+}
+
 function startTimer(resetTime = true) {
   clearInterval(timerId);
   if (resetTime) {
     timeLeft = getLevelTimeLimit(currentLevel);
   }
   timerEl.textContent = timeLeft;
+  updateQuestionTimerVisual();
 
   timerId = setInterval(() => {
     timeLeft -= 1;
     timerEl.textContent = timeLeft;
+    updateQuestionTimerVisual();
 
     if (timeLeft <= 0) {
       clearInterval(timerId);
@@ -378,6 +411,8 @@ function finishGame() {
     spawnLevelCelebration(true);
     nextLevelBtn.classList.add("hidden");
     nextLevelBtn.dataset.mode = "";
+    startBtn.textContent = "Начать игру";
+    startBtn.dataset.action = "start";
   } else if (levelPassed) {
     setMessage("Уровень пройден! 🚀", "message-good");
     messageEl.classList.add("message-level-win");
@@ -386,10 +421,14 @@ function finishGame() {
     spawnLevelCelebration();
     nextLevelBtn.textContent = "На следующий уровень 🚀";
     nextLevelBtn.dataset.mode = "next";
+    startBtn.textContent = "На следующий уровень 🚀";
+    startBtn.dataset.action = "next-level";
   } else {
     setMessage("Попробуй ещё раз", "message-bad");
     nextLevelBtn.textContent = "Продолжить";
     nextLevelBtn.dataset.mode = "retry";
+    startBtn.textContent = "Начать игру";
+    startBtn.dataset.action = "start";
   }
   resultCardEl.innerHTML = `
     <p><strong>Итоги миссии</strong></p>
@@ -397,6 +436,7 @@ function finishGame() {
     <p>⭐ Правильных ответов: <strong>${stars}</strong></p>
     <p>💣 Ошибок: <strong>${bombs}</strong></p>
     <p>✅ Верных в уровне: <strong>${levelCorrectAnswers}</strong> / ${TOTAL_ROUNDS}</p>
+    ${levelPassed && !isFinalVictory ? `<p><strong>Следующий уровень: ${getTimeForLevel(currentLevel + 1)} сек на ответ</strong></p>` : ""}
     ${isFinalVictory ? "<p class='final-mission-text'><strong>Миссия завершена! Ты выучил таблицу умножения!</strong></p>" : ""}
   `;
   renderBoosts();
@@ -414,7 +454,7 @@ function finishGame() {
     nextLevelBtn.dataset.mode = "";
   }
   restartBtn.classList.remove("hidden");
-  startBtn.classList.add("hidden");
+  startBtn.classList.remove("hidden");
   if (gameEl) {
     gameEl.classList.add("mobile-finished");
   }
@@ -429,12 +469,10 @@ function stopGame() {
   prepareStartScreen("Игра остановлена. Нажми «Начать игру»");
 }
 
-function startNextLevel() {
+function nextLevel() {
   const mode = nextLevelBtn.dataset.mode || "retry";
   if (mode === "next") {
     currentLevel += 1;
-    // Сразу обновляем подсветку индикатора уровня после перехода.
-    renderBoosts();
   }
 
   gameStarted = true;
@@ -458,8 +496,12 @@ function startNextLevel() {
   starsEl.textContent = String(stars);
   bombsEl.textContent = String(bombs);
   timerEl.textContent = getLevelTimeLimit(currentLevel);
+  timeLeft = getLevelTimeLimit(currentLevel);
+  updateQuestionTimerVisual();
 
   startBtn.classList.add("hidden");
+  startBtn.dataset.action = "start";
+  startBtn.textContent = "Начать игру";
   nextLevelBtn.classList.add("hidden");
   nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
@@ -477,9 +519,7 @@ function startNextLevel() {
 
   // Для режима retry оставляем подсветку текущего уровня,
   // для режима next уже применена новая подсветка выше.
-  if (mode !== "next") {
-    renderBoosts();
-  }
+  renderBoosts();
   updatePositions();
   loadNextRound();
 }
@@ -518,7 +558,7 @@ function applyRocketMove() {
   // Скорость зависит от серии и уровня реактивного ускорителя.
   // Серия 3+ = ускорение, серия 5+ = суперускорение.
   const streakBoost = streak >= 5 ? 2 : streak >= 3 ? 1 : 0;
-  const step = 1 + streakBoost + speedBonus;
+  const step = 1 + streakBoost;
 
   // Визуально показываем ускорение через более быстрый ease-out.
   const moveDurationMs = streak >= 5 ? 260 : streak >= 3 ? 380 : 550;
@@ -660,7 +700,11 @@ function resetGameAndStart() {
   starsEl.textContent = "0";
   bombsEl.textContent = "0";
   timerEl.textContent = getLevelTimeLimit(currentLevel);
+  timeLeft = getLevelTimeLimit(currentLevel);
+  updateQuestionTimerVisual();
   startBtn.classList.add("hidden");
+  startBtn.dataset.action = "start";
+  startBtn.textContent = "Начать игру";
   nextLevelBtn.classList.add("hidden");
   nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
@@ -680,6 +724,7 @@ function resetGameAndStart() {
 
 function fullResetAndStart() {
   currentLevel = 1;
+  speedBonus = 0;
   resetGameAndStart();
 }
 
@@ -707,13 +752,15 @@ function prepareStartScreen(statusText = "Готова к полету") {
   starsEl.textContent = "0";
   bombsEl.textContent = "0";
   timerEl.textContent = getLevelTimeLimit(currentLevel);
+  timeLeft = getLevelTimeLimit(currentLevel);
+  updateQuestionTimerVisual();
   fireBadgeEl.classList.add("hidden");
   questionCardEl.classList.remove("hidden");
   resultCardEl.classList.add("hidden");
   resultCardEl.classList.remove("result-win");
   resultCardEl.innerHTML = "";
   questionEl.innerHTML = `
-    <span class="start-rule-main">Отвечай правильно и обгони соперника 🚀</span>
+    <span class="start-rule-main">Отвечай правильно —<br>и долети до планеты 🚀</span>
     <span class="start-rule-sub">12 заданий без ошибок — чтобы пройти уровень</span>
   `;
   answersEl.innerHTML = `
@@ -733,6 +780,8 @@ function prepareStartScreen(statusText = "Готова к полету") {
   `;
   setMessage(statusText);
   startBtn.classList.remove("hidden");
+  startBtn.dataset.action = "start";
+  startBtn.textContent = "Начать игру";
   nextLevelBtn.classList.add("hidden");
   nextLevelBtn.classList.remove("level-cta-show");
   nextLevelBtn.dataset.mode = "";
@@ -746,8 +795,15 @@ function prepareStartScreen(statusText = "Готова к полету") {
 
 rocketEl.textContent = "🚀";
 renderBoosts();
-startBtn.addEventListener("click", resetGameAndStart);
-nextLevelBtn.addEventListener("click", startNextLevel);
+updateQuestionTimerVisual();
+startBtn.addEventListener("click", () => {
+  if (startBtn.dataset.action === "next-level") {
+    nextLevel();
+    return;
+  }
+  resetGameAndStart();
+});
+nextLevelBtn.addEventListener("click", nextLevel);
 pauseBtn.addEventListener("click", togglePause);
 stopBtn.addEventListener("click", stopGame);
 restartBtn.addEventListener("click", fullResetAndStart);

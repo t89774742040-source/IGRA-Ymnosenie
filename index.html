@@ -14,7 +14,7 @@
         <span class="hero-title-main">КосмоУмножайка</span>
         <span class="hero-title-sub">Спасение планет</span>
       </h1>
-      <p class="subtitle-hint">Отвечай правильно и обгони соперника 🚀 · 6 секунд на ответ ⏱</p>
+      <p class="subtitle-hint">Отвечай правильно — и долети до планеты 🚀 · 6 секунд на ответ ⏱</p>
     </div>
 
     <div class="game-layout">
@@ -61,6 +61,12 @@
 
         <div class="question-card">
           <h2 id="question">3 × 4 = ?</h2>
+          <div class="question-timer">
+            <p id="questionTimerText" class="question-timer-text">Осталось: 10 сек</p>
+            <div class="timer-bar" aria-hidden="true">
+              <div id="questionTimerBarFill" class="timer-bar-fill"></div>
+            </div>
+          </div>
           <div id="answers" class="answers">
             <button class="answer-btn">12</button>
             <button class="answer-btn">15</button>
