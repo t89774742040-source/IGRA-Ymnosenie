@@ -1474,6 +1474,15 @@ h1 {
     gap: 14px;
   }
 
+  .game.start-state .question-timer-text {
+    font-size: clamp(16px, 4.2vw, 20px);
+    font-weight: 600;
+    line-height: 1.3;
+    color: rgba(227, 241, 255, 0.96);
+    text-shadow: 0 0 8px rgba(122, 214, 255, 0.24);
+    margin-bottom: 8px;
+  }
+
   .game.start-state #question {
     margin: 0;
     font-size: inherit;
@@ -1492,17 +1501,19 @@ h1 {
   }
 
   .start-rule-main {
-    font-size: clamp(21px, 6.4vw, 29px);
+    font-size: clamp(26px, 8vw, 35px);
     font-weight: 800;
-    line-height: 1.35;
+    line-height: 1.28;
     text-align: center;
   }
 
   .start-rule-sub {
-    margin-top: 8px;
-    font-size: 0.85em;
-    font-weight: 600;
-    line-height: 1.22;
+    margin-top: 10px;
+    font-size: clamp(18px, 5.2vw, 24px);
+    font-weight: 700;
+    line-height: 1.32;
+    color: rgba(231, 243, 255, 0.96);
+    text-shadow: 0 0 10px rgba(127, 213, 255, 0.24);
   }
 
   .game.start-state .answers {
@@ -1604,17 +1615,18 @@ h1 {
   }
 
   .game.start-state .game-layout {
-    justify-content: center;
-    align-content: center;
-    gap: 4px;
+    justify-content: flex-start;
+    align-content: flex-start;
+    gap: 8px;
   }
 
   .game.start-state .center-col {
     flex: 0 0 auto;
+    margin-top: 4px;
   }
 
   .game.start-state {
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .game.start-state .right-col {
@@ -1723,12 +1735,12 @@ h1 {
     }
 
     .start-rule-main {
-      font-size: clamp(20px, 6vw, 24px);
+      font-size: clamp(24px, 7.2vw, 30px);
     }
 
     .start-rule-sub {
       margin-top: 8px;
-      font-size: 0.85em;
+      font-size: clamp(17px, 5vw, 22px);
     }
 
     .start-lane {
@@ -1773,15 +1785,46 @@ h1 {
     display: block;
   }
 
+  .game.mobile-playing {
+    justify-content: flex-start;
+  }
+
+  .game.mobile-playing .hero-block {
+    margin-bottom: 6px;
+  }
+
+  .game.mobile-playing .game-layout {
+    flex: 1;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .game.mobile-playing .center-col {
+    flex: 1 1 auto;
+    min-height: 0;
+    justify-content: flex-start;
+  }
+
+  .game.mobile-playing .center-col .question-card {
+    padding: 8px 10px;
+    margin-bottom: 4px;
+  }
+
+  .game.mobile-playing .center-col .answers {
+    gap: 8px;
+  }
+
+  .game.mobile-playing .center-col .answer-btn {
+    min-height: 46px;
+  }
+
   .right-col .boost-card {
     margin: 0;
     position: static;
-    height: 100%;
-    max-height: 26vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
-    padding: 5px 6px;
+    height: auto;
+    max-height: none;
+    overflow: hidden;
+    padding: 4px 6px;
     opacity: 0.8;
     box-shadow: none;
     backdrop-filter: none;
@@ -1789,7 +1832,7 @@ h1 {
   }
 
   .right-col .boost-card h3 {
-    margin: 0 0 2px;
+    margin: 0 0 4px;
     font-size: clamp(13px, 4.2vw, 15px);
     line-height: 1.05;
   }
@@ -1801,7 +1844,7 @@ h1 {
   .right-col .boost-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 6px;
     margin: 0;
   }
 
@@ -1812,7 +1855,7 @@ h1 {
     align-items: center;
     justify-content: flex-start;
     gap: 8px;
-    padding: 8px;
+    padding: 6px;
     text-align: left;
   }
 
@@ -1854,7 +1897,7 @@ h1 {
     display: flex;
     gap: 10px;
     width: 100%;
-    margin: 8px 0 8px;
+    margin: 6px 0 4px;
   }
 
   .pause-stop-row .pause-btn,
@@ -1865,11 +1908,19 @@ h1 {
     margin: 0;
     display: block;
     font-size: clamp(15px, 4.5vw, 18px);
-    border-color: rgba(168, 198, 224, 0.34);
-    background: linear-gradient(180deg, rgba(59, 84, 129, 0.55), rgba(40, 59, 95, 0.55));
     color: rgba(228, 240, 255, 0.9);
     box-shadow: none;
     opacity: 0.86;
+  }
+
+  .pause-stop-row .pause-btn {
+    border-color: rgba(185, 161, 255, 0.52);
+    background: linear-gradient(180deg, rgba(112, 84, 196, 0.74), rgba(74, 52, 149, 0.76));
+  }
+
+  .pause-stop-row .stop-btn {
+    border-color: rgba(255, 158, 172, 0.5);
+    background: linear-gradient(180deg, rgba(172, 70, 92, 0.74), rgba(125, 43, 61, 0.76));
   }
 
   .pause-stop-row .pause-btn.hidden,
@@ -1900,9 +1951,9 @@ h1 {
     flex: 0 0 auto;
     width: 100%;
     max-width: 360px;
-    max-height: 26vh;
+    max-height: none;
     overflow: hidden;
-    margin: 0 auto;
+    margin: 4px auto 0;
   }
 
   .game.mobile-playing .center-col .action-zone {
